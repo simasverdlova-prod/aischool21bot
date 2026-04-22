@@ -8,7 +8,6 @@ from anthropic import Anthropic
 # Токены и ключи из переменных окружения
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
-ALLOWED_USER_ID = int(os.environ.get("ALLOWED_USER_ID", "0"))
 
 # Инициализация Claude
 claude = Anthropic(api_key=ANTHROPIC_API_KEY)
@@ -58,11 +57,6 @@ def check_neural_network(url, name):
 
 # Команда /start
 async def start(update: Update, context):
-    user_id = update.effective_user.id
-    if user_id != ALLOWED_USER_ID:
-        await update.message.reply_text("⛔ У вас нет доступа к этому боту.")
-        return
-    
     await update.message.reply_text(
         "🤖 *Привет! Я бот для проверки нейросетей*\n\n"
         "Просто отправь мне список нейросетей в формате:\n"
@@ -79,11 +73,6 @@ async def start(update: Update, context):
 
 # Обработка сообщений со списком нейросетей
 async def handle_message(update: Update, context):
-    user_id = update.effective_user.id
-    if user_id != ALLOWED_USER_ID:
-        await update.message.reply_text("⛔ Нет доступа.")
-        return
-    
     text = update.message.text
     
     # Ищем в сообщении строки вида "Название https://..."
