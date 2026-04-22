@@ -92,15 +92,17 @@ async def handle_message(update: Update, context):
     if not networks:
         await update.message.reply_text(
             "❌ Не нашёл ссылок. Отправьте список в формате:\n"
-            "`Название https://ссылка.ком`",
+            "`Название https://ссылка.ком`\n\n"
+            "Пример:\n"
+            "`DeepSeek https://chat.deepseek.com`",
             parse_mode="Markdown"
         )
         return
     
     # Сообщаем о начале проверки
     status_msg = await update.message.reply_text(
-        f"🔍 Начинаю проверку {len(networks)} нейросетей...\n"
-        "⏳ Это может занять 10–30 секунд"
+        f"🔍 Проверяю {len(networks)} нейросетей...\n"
+        "⏳ Это займёт 10–30 секунд"
     )
     
     # Проверяем каждую нейросеть
@@ -109,16 +111,42 @@ async def handle_message(update: Update, context):
         result = check_neural_network(url, name)
         results.append(result)
     
-    # Формируем таблицу с результатами
-    table = "📊 *Результаты проверки:*\n\n"
-    table += "| Нейросеть | Доступ в РФ | Демо-доступ | Регистрация |\n"
-    table += "|-----------|-------------|-------------|-------------|\n"
+    # Формируем ответ в виде списка (без таблицы)
+    response = "📊 *РЕЗУЛЬТАТЫ ПРОВЕРКИ:*\n\n"
     
-    for r in results:
-        table += f"| {r['name']} | {r['russia_access']} | {r['free_demo']} | {r['registration']} |\n"
+    for i, r in enumerate(results, 1):
+        # Номер и название
+        if i == 1:
+            response += f"1️⃣ *{r['name']}*\n"
+        elif i == 2:
+            response += f"2️⃣ *{r['name']}*\n"
+        elif i == 3:
+            response += f"3️⃣ *{r['name']}*\n"
+        elif i == 4:
+            response += f"4️⃣ *{r['name']}*\n"
+        elif i == 5:
+            response += f"5️⃣ *{r['name']}*\n"
+        else:
+            response += f"{i}️⃣ *{r['name']}*\n"
+        
+        response += f"   🔗 {r['url']}\n"
+        response += f"   🌐 Доступ в РФ: {r['russia_access']}\n"
+        response += f"   🆓 Бесплатный демо: {r['free_demo']}\n"
+        response += f"   📝 Регистрация: {r['registration']}\n\n"
+    
+    # Добавляем итоги
+    response += "━━━━━━━━━━━━━━━━━━━━━━\n"
+    response += f"💡 *Итого:* {len(results)} нейросетей проверено\n"
+    
+    # Считаем статистику
+    russia_ok = sum(1 for r in results if "✅ Да" in r['russia_access'])
+    free_ok = sum(1 for r in results if "✅ Есть" in r['free_demo'])
+    
+    response += f"🌐 Работают в РФ: {russia_ok} из {len(results)}\n"
+    response += f"🆓 Есть бесплатный доступ: {free_ok} из {len(results)}"
     
     # Отправляем результат
-    await status_msg.edit_text(table, parse_mode="Markdown")
+    await status_msg.edit_text(response, parse_mode="Markdown")
 
 # Запуск бота
 def main():
